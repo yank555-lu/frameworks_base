@@ -43,9 +43,10 @@ import android.view.WindowManagerPolicyConstants.PointerEventListener;
 import android.view.inputmethod.InputMethodManagerInternal;
 
 import com.android.internal.R;
-import com.android.internal.util.gzosp.GzospUtils;
-import com.android.internal.util.gzosp.TaskUtils;
 import com.android.server.LocalServices;
+
+import com.asylum.action.Action;
+import com.asylum.action.ActionConstants;
 
 public class GestureButton implements PointerEventListener {
     private static final String TAG = "GestureButton";
@@ -112,7 +113,7 @@ public class GestureButton implements PointerEventListener {
                     if (DEBUG) Slog.i(TAG, "MSG_SEND_LONG_PRESS");
                     mKeyEventHandled = true;
                     mPwm.performHapticFeedbackLw(null, HapticFeedbackConstants.LONG_PRESS, false);
-                    TaskUtils.toggleLastApp(mContext, UserHandle.USER_CURRENT);
+                    Action.processAction(mContext, ActionConstants.ACTION_LAST_APP, false);
                     break;
             }
         }
@@ -278,7 +279,7 @@ public class GestureButton implements PointerEventListener {
     }
 
     private void triggerGestureVirtualKeypress(int keyCode) {
-        GzospUtils.sendKeycode(keyCode);
+        Action.triggerVirtualKeypress(keyCode, false);
     }
 
     void navigationBarPosition(int displayWidth, int displayHeight, int displayRotation) {
