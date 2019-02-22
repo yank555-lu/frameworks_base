@@ -753,7 +753,7 @@ final class Notifier {
     }
 
     private void showWirelessChargingStarted(int batteryLevel) {
-        playWirelessChargingVibration();
+        playChargingVibration();
         playChargingStartedSound();
         if (mStatusBarManagerInternal != null) {
             mStatusBarManagerInternal.showChargingAnimation(batteryLevel);
@@ -762,6 +762,7 @@ final class Notifier {
     }
 
     private void showWiredChargingStarted() {
+        playChargingVibration();
         playChargingStartedSound();
         mSuspendBlocker.release();
     }
@@ -770,10 +771,8 @@ final class Notifier {
         mTrustManager.setDeviceLockedForUser(userId, true /*locked*/);
     }
 
-    private void playWirelessChargingVibration() {
-        final boolean vibrateEnabled = Settings.Global.getInt(mContext.getContentResolver(),
-                Settings.Global.CHARGING_VIBRATION_ENABLED, 0) != 0;
-        if (vibrateEnabled && isChargingFeedbackEnabled()) {
+    private void playChargingVibration() {
+        if (isChargingVibrationFeedbackEnabled()) {
             mVibrator.vibrate(WIRELESS_CHARGING_VIBRATION_EFFECT, VIBRATION_ATTRIBUTES);
         }
     }
@@ -781,6 +780,15 @@ final class Notifier {
     private boolean isChargingFeedbackEnabled() {
         final boolean enabled = Settings.Global.getInt(mContext.getContentResolver(),
                 Settings.Global.CHARGING_SOUNDS_ENABLED, 1) != 0;
+        final boolean dndOff = Settings.Global.getInt(mContext.getContentResolver(),
+                Settings.Global.ZEN_MODE, Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS)
+                == Settings.Global.ZEN_MODE_OFF;
+        return enabled && dndOff;
+    }
+
+    private boolean isChargingVibrationFeedbackEnabled() {
+        final boolean enabled = Settings.Global.getInt(mContext.getContentResolver(),
+                Settings.Global.CHARGING_VIBRATION_ENABLED, 1) != 0;
         final boolean dndOff = Settings.Global.getInt(mContext.getContentResolver(),
                 Settings.Global.ZEN_MODE, Settings.Global.ZEN_MODE_IMPORTANT_INTERRUPTIONS)
                 == Settings.Global.ZEN_MODE_OFF;
