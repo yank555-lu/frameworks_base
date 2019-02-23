@@ -519,6 +519,14 @@ public class UsbDeviceManager implements ActivityManagerInternal.ScreenObserver 
             mCurrentUser = ActivityManager.getCurrentUser();
             mScreenLocked = true;
 
+            mContentResolver.registerContentObserver(
+                    Settings.Secure.getUriFor(Settings.Secure.ADB_NOTIFY),
+                    false, new ContentObserver(null) {
+                        public void onChange(boolean selfChange) {
+                            updateAdbNotification(false);
+                        }
+                    });
+
             /*
              * Use the normal bootmode persistent prop to maintain state of adb across
              * all boot modes.
@@ -1182,8 +1190,10 @@ public class UsbDeviceManager implements ActivityManagerInternal.ScreenObserver 
             if (mNotificationManager == null) return;
             final int id = SystemMessage.NOTE_ADB_ACTIVE;
             final int titleRes = com.android.internal.R.string.adb_active_notification_title;
+            final boolean hideNotification = Settings.Secure.getInt(mContext.getContentResolver(),
+                            Settings.Secure.ADB_NOTIFY, 1) == 0;
 
-            if (mAdbEnabled && mConnected) {
+            if (mAdbEnabled && mConnected && !hideNotification) {
                 if ("0".equals(getSystemProperty("persist.adb.notify", ""))) return;
 
                 if (force && mAdbNotificationShown) {
