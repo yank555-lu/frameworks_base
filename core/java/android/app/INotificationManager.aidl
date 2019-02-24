@@ -145,6 +145,7 @@ interface INotificationManager
 
     int getZenMode();
     ZenModeConfig getZenModeConfig();
+    oneway void setZenModeWithLock(int mode, in Uri conditionId, String reason, boolean lock);
     oneway void setZenMode(int mode, in Uri conditionId, String reason);
     oneway void notifyConditions(String pkg, in IConditionProvider provider, in Condition[] conditions);
     boolean isNotificationPolicyAccessGranted(String pkg);

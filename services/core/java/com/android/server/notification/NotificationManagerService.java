@@ -410,6 +410,9 @@ public class NotificationManagerService extends SystemService {
     private MetricsLogger mMetricsLogger;
     private Predicate<String> mAllowedManagedServicePackages;
 
+    /** Is changing zen mode allowed */
+    private boolean mSliderZenModeLock = false;
+
     private static class Archive {
         final int mBufferSize;
         final ArrayDeque<StatusBarNotification> mBuffer;
@@ -2938,12 +2941,21 @@ public class NotificationManagerService extends SystemService {
             return mZenModeHelper.getConfig();
         }
 
+        public void setZenModeWithLock(int mode, Uri conditionId, String reason, boolean lock)
+                throws RemoteException {
+            mSliderZenModeLock = false;
+            setZenMode(mode, conditionId, reason);
+            mSliderZenModeLock = lock;
+        }
+
         @Override
         public void setZenMode(int mode, Uri conditionId, String reason) throws RemoteException {
             enforceSystemOrSystemUI("INotificationManager.setZenMode");
             final long identity = Binder.clearCallingIdentity();
             try {
-                mZenModeHelper.setManualZenMode(mode, conditionId, null, reason);
+                if (!mSliderZenModeLock) {
+                    mZenModeHelper.setManualZenMode(mode, conditionId, null, reason);
+                }
             } finally {
                 Binder.restoreCallingIdentity(identity);
             }
@@ -3020,7 +3032,9 @@ public class NotificationManagerService extends SystemService {
             if (zen == -1) throw new IllegalArgumentException("Invalid filter: " + filter);
             final long identity = Binder.clearCallingIdentity();
             try {
-                mZenModeHelper.setManualZenMode(zen, null, pkg, "setInterruptionFilter");
+                if (!mSliderZenModeLock) {
+                    mZenModeHelper.setManualZenMode(zen, null, pkg, "setInterruptionFilter");
+                }
             } finally {
                 Binder.restoreCallingIdentity(identity);
             }
